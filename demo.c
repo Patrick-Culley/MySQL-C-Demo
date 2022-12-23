@@ -2,87 +2,99 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/*Basic MySQL functions:
-* ----------------------
-1. mysql_init()				Allocates or initialises a MYSQL object used by mysql_real_connect
-2. mysql_get_client_info	Returns MySQL version number 
-3. mysql_error()							
-4. mysql_query() 
-5. mysql_close()			
-5. mysql_real_connect() 
-
-   Hierarchy: Database (top) --> Table --> Rows --> ?? 
+/*
 --------------------------------------------------------------------------------------------------------*/
-
 void retreive_rows(MYSQL* con) {
-	mysql_query(con, "SELECT * FROM items");
+	mysql_query(con, "SELECT * FROM tasks");
 	MYSQL_RES* res = mysql_store_result(con);
 	MYSQL_ROW row;
 
 	while ((row = mysql_fetch_row(res))) {
-		printf("%s) ", row[0]);
+		printf("%s | ", row[0]);
 		printf("%s\n", row[1]);
 	};
+	printf("\n"); 
 	mysql_free_result(res);
 };
 
 void create_task(MYSQL* con) {
-	char str[255];
+	char task[50]; 
+	char buffer[50];
 
-	printf("\nEnter task:\n> "); 
-	scanf("%s", str); 
-	printf("%s", str);
+	printf("Enter task to add	: ");
+	fgets(task, 50, stdin);
+	task[strlen(task) - 1] = '\0';
+   	sprintf(buffer, "INSERT INTO tasks(task) VALUES('%s')", task); 
+	mysql_query(con, &buffer); 
+}; 
+
+void delete_record(MYSQL* con) {
+	char id[5]; 
+	char buffer[50]; 
+	int num; 
+
+	printf("Enter id of task you would like to delete: "); 
+	fgets(id, 5, stdin);
+	num = atoi(id); 
+
+	sprintf(buffer, "DELETE FROM tasks WHERE id=(%d)", num); 
+	mysql_query(con, &buffer); 
 }; 
 
 int main(int argc, char** argv) {
-	int choice;  
-
-	printf("                                    >>>>>>>>>> WELCOME TO TASK TRACKER <<<<<<<<<\n\n");
-	printf(" Choose from one of the following options below: \n  1. View tasks \n  2. Create task \n  3. Delete task \n  4. Update task \n\n");
-	printf("> ");
-	scanf_s("%d", &choice);
-
-	// Connect to DB -----------------------------------------------------------------------------------
+	int count; 
 	MYSQL* con = mysql_init(NULL);
-	if (con == NULL) {
-		printf(stderr, "%s\n", mysql_error(con));		// verify if connection is successful 
-		exit(1);
-	};
 
-	// Create DB (2 steps) ----------------------------------------------------------------------
-	if (mysql_real_connect(con, "localhost", "root", "Gh33c@t86",
-		"maindb", 0, NULL, 0) == NULL)
-	{
+	if (con == NULL) {
 		fprintf(stderr, "%s\n", mysql_error(con));
-		mysql_close(con);
 		exit(1);
 	}
-	if (mysql_query(con, "CREATE DATABASE maindb")) {
-		printf(stderr, "%s\n", mysql_error(con));
-		//mysql_close(con);
-	};
-	//mysql_real_connect(con, "localhost", "user12", "34klq*", "maindb", 0, NULL, 0);
- 
-	/*Create Table------------------------------------------------------------------------------
-	mysql_query(con, "DROP TABLE IF EXISTS items"); 
-	mysql_query(con, "CREATE TABLE items(id INT PRIMARY KEY AUTO_INCREMENT, name VARCHAR(255))");
+	if (mysql_real_connect(con, "localhost", "root", "Gh33c@t86",
+		NULL, 0, NULL, 0) == NULL) {
+			fprintf(stderr, "%s\n", mysql_error(con));
+			mysql_close(con);
+			exit(1);
+	}
+	mysql_query(con, "CREATE DATABASE aarrgghh"); 
+	mysql_close(con); 
 
-	// Insert Data - DEMO PURPOSES ONLY ---------------------------------------------------
-	/*
-	mysql_query(con, "INSERT INTO items VALUES(1, 'eat eggs'\n)");
-	mysql_query(con, "INSERT INTO items VALUES(2, 'eat steak'\n)");
-	mysql_query(con, "INSERT INTO items VALUES(3, 'eat chcken')");
-	mysql_query(con, "INSERT INTO items VALUES(4, 'eat broccolli')");
-	mysql_query(con, "INSERT INTO items VALUES(5, 'eat salad')");
-	mysql_query(con, "INSERT INTO items VALUES(6, 'eat rice & beans')");
-	*/
+	con = mysql_init(NULL);
+	mysql_real_connect(con, "localhost", "root", "Gh33c@t86", "aarrgghh", 0, NULL, 0); 
+	
 
-	// Retrieve rows from list -------------------------------------------------------------------
-	if (choice == 1) {
-		retreive_rows(con);
-	}; 
-	if (choice == 2) {
-		create_task(con);
+	//Create Table------------------------------------------------------------------------------
+	mysql_query(con, "CREATE TABLE tasks(id INT PRIMARY KEY AUTO_INCREMENT, task VARCHAR(255))");
+
+	// Gather input 
+	printf("                                      << WELCOME TO TASK TRACKER >>\n\n");
+	printf("                            Enter number from one of the following options below: \n");
+	printf("                                            1. View tasks \n"); 
+	printf("                                            2. Create task \n");
+	printf("                                            3. Delete task \n");
+	printf("                                            4. Exit program \n\n");
+
+	char choice[10];
+	int num, ret;
+
+	// Add switch statement 
+
+	while (1) {
+		printf("Enter number: ");
+		fgets(choice, 10, stdin);
+		num = atoi(choice);
+
+		if (num == 1) {
+			retreive_rows(con);
+		};
+		if (num == 2) {
+			create_task(con);
+		};
+		if (num == 3) {
+			delete_record(con);
+		};
+		if (num == 4) {
+			return 0;
+		}; 
 	}; 
 
 	exit(1);
