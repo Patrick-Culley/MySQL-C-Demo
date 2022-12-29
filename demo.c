@@ -31,7 +31,7 @@ void retreive_tables(MYSQL* con) {
 
 // Displays all table rows --------------------------------------------------------------------
 void retreive_rows(MYSQL* con) {
-	mysql_query(con, "SELECT * FROM diabetes");
+	mysql_query(con, "SELECT * FROM diabetes1");
 	MYSQL_RES* res = mysql_store_result(con);		// Used to iterate over all stored records 
 	MYSQL_ROW row;
 
@@ -46,23 +46,32 @@ void retreive_rows(MYSQL* con) {
 // Inserts new record -------------------------------------------------------------------------
 void create_task(MYSQL* con) {
 	char meal[50]; 
-	char buffer[50];
-	char calories[5]; 
-	int num;
+	char buffer[255];
+	char cal[5], carb[5], sugar[5];
+	int calint, carbint, sugint;
 
 	printf("Enter meal: ");
 	fgets(meal, 50, stdin);
 	printf("Enter calories: ");
-	fgets(calories, 5,stdin);
-	num = atoi(calories); 
+	fgets(cal, 5,stdin);
+	printf("Enter carbohydrates: ");
+	fgets(carb, 5, stdin);
+	printf("Enter sugar (in grams): ");
+	fgets(sugar, 5, stdin);
 
+	calint = atoi(cal); 
+	carbint = atoi(carb); 
+	sugint = atoi(sugar); 
+
+	if (mysql_query(con, buffer)) {
+		fprintf(stderr, "%s\n", mysql_error(con));
+		exit(1);
+	};
 
 	// Replace newline with null char to prevent empty rows
 	meal[strlen(meal) - 1] = '\0';		
-   	sprintf(buffer, "INSERT INTO diabetes(meal, calories) VALUES('%s', %d)", meal, num); 
+   	sprintf(buffer, "INSERT INTO trackdiabetes(meal, calories, carbs, sugars) VALUES('%s', %d, %d, %d)", meal, calint, carbint, sugint); 
 	printf("%s", buffer); 
-
-	mysql_query(con, buffer); 
 }; 
 
 // Deletes record from table ------------------------------------------------------------------
@@ -75,7 +84,7 @@ void delete_record(MYSQL* con) {
 	fgets(id, 5, stdin);		// To convert char to int
 	num = atoi(id); 
 
-	sprintf(buffer, "DELETE FROM diabetes WHERE id=(%d)", num); 
+	sprintf(buffer, "DELETE FROM trackdiabetes WHERE id=(%d)", num); 
 	mysql_query(con, &buffer); 
 }; 
  
@@ -104,7 +113,7 @@ int main(int argc, char** argv) {
 	mysql_real_connect(con, "localhost", "user", "password", "newDB", 0, NULL, 0);			// connection containing new database. 
 
 	//Create Table------------------------------------------------------------------------------
-	mysql_query(con, "CREATE TABLE diabetes(id INT PRIMARY KEY AUTO_INCREMENT, meal VARCHAR(255), cals INT)");
+	mysql_query(con, "CREATE TABLE trackd(id INT PRIMARY KEY AUTO_INCREMENT, meal VARCHAR(255), calories INT, carbs INT, sugars INT)");
 
 	// Instructions -----------------------------------------------------------------------------
 	printf("                                      << WELCOME TO DIABEATES ANALYZER >>\n\n");
