@@ -4,7 +4,7 @@
 
 // Displays all table rows --------------------------------------------------------------------
 void retreive_rows(MYSQL* con) {
-	mysql_query(con, "SELECT * FROM zzzzz");
+	mysql_query(con, "SELECT * FROM trackdiabetes1");
 	MYSQL_RES* res = mysql_store_result(con);		// Used to iterate over all stored records 
 	MYSQL_ROW row;
 
@@ -38,7 +38,7 @@ void create_task(MYSQL* con) {
 
 	// Replace newline with null char to prevent empty rows
 	meal[strlen(meal) - 1] = '\0';		
-   	sprintf(buffer, "INSERT INTO zzzzz(meal, calories, carbs, sugars) VALUES('%s', %d, %d, %d)", meal, calint, carbint, sugint); 
+   	sprintf(buffer, "INSERT INTO trackdiabetes1(meal, calories, carbs, sugars) VALUES('%s', %d, %d, %d)", meal, calint, carbint, sugint); 
 
 	if (mysql_query(con, buffer)) {
 		fprintf(stderr, "%s\n", mysql_error(con));
@@ -56,7 +56,7 @@ void delete_record(MYSQL* con) {
 	fgets(id, 5, stdin);		// To convert char to int
 	num = atoi(id); 
 
-	sprintf(buffer, "DELETE FROM zzzzz WHERE id=(%d)", num); 
+	sprintf(buffer, "DELETE FROM trackdiabetes1 WHERE id=(%d)", num); 
 	mysql_query(con, &buffer); 
 }; 
  
@@ -76,15 +76,27 @@ int main(int argc, char** argv) {
 			mysql_close(con);
 			exit(1);
 	}
-	
+
+	mysql_query(con, "CREATE DATABASE IF NOT EXISTS newdb");
+
 	// Close prior to initializing a new connection with the newly created database
 	mysql_close(con);							 
 
 	con = mysql_init(NULL);
-	mysql_real_connect(con, "localhost", "user", "password", "newdb", 0, NULL, 0);			// connection containing new database. 
+	
+	// connection containing new database. 
+	if (mysql_real_connect(con, "localhost", "user", "password", "newdb", 0, NULL, 0) == NULL) {
+			fprintf(stderr, "%s\n", mysql_error(con));
+			mysql_close(con);
+			exit(1);	
+	};		
 
 	//Create Table------------------------------------------------------------------------------
-	mysql_query(con, "CREATE TABLE zzzzz(id INT PRIMARY KEY AUTO_INCREMENT, VARCHAR(255), calories INT, carbs INT, sugars INT)");
+	if (mysql_query(con, "CREATE TABLE IF NOT EXISTS trackdiabetes1(id INT PRIMARY KEY AUTO_INCREMENT, meal VARCHAR(255), calories INT, carbs INT, sugars INT)")) {
+			fprintf(stderr, "%s\n", mysql_error(con));
+			mysql_close(con);
+			exit(1);
+	};
 
 	// Instructions -----------------------------------------------------------------------------
 	printf("                                      << WELCOME TO DIABEATES ANALYZER >>\n\n");
