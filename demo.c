@@ -2,43 +2,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void create_table(MYSQL* con) {
-	char table_name[50];
-
-};
-
-
-// Retrieve tables ----------------------------------------------------------------------------
-void retreive_tables(MYSQL* con) {
-	mysql_query(con, "SHOW TABLES"); 
-	MYSQL_RES* res = mysql_store_result(con);
-	MYSQL_ROW row; 
-	int count; 
-
-	printf("Tables\n"); 
-	printf("------\n"); 
-
-	count = 1; 
-	while ((row = mysql_fetch_row(res))) {
-		printf("%d | ", count);
-		printf("%s\n", row[0]);
-		count++; 
-	};
-	printf("\n");
-	mysql_free_result(res);
-
-};
-
 // Displays all table rows --------------------------------------------------------------------
 void retreive_rows(MYSQL* con) {
-	mysql_query(con, "SELECT * FROM diabetes1");
+	mysql_query(con, "SELECT * FROM zzzzz");
 	MYSQL_RES* res = mysql_store_result(con);		// Used to iterate over all stored records 
 	MYSQL_ROW row;
 
 	// Iterate over rows, printing id & task 
 	while ((row = mysql_fetch_row(res))) {
-		printf("%s | ", row[0]);
-	};
+		printf("ID: %s\nMEAL: %s  \nCALORIES: %s  \nCARBS: %s  \nSUGAR: %s\n\n", row[0], row[1], row[2], row[3], row[4]);
+		};
 	printf("\n"); 
 	mysql_free_result(res);						   // free prior to returing to main 
 };
@@ -63,15 +36,14 @@ void create_task(MYSQL* con) {
 	carbint = atoi(carb); 
 	sugint = atoi(sugar); 
 
+	// Replace newline with null char to prevent empty rows
+	meal[strlen(meal) - 1] = '\0';		
+   	sprintf(buffer, "INSERT INTO zzzzz(meal, calories, carbs, sugars) VALUES('%s', %d, %d, %d)", meal, calint, carbint, sugint); 
+
 	if (mysql_query(con, buffer)) {
 		fprintf(stderr, "%s\n", mysql_error(con));
 		exit(1);
 	};
-
-	// Replace newline with null char to prevent empty rows
-	meal[strlen(meal) - 1] = '\0';		
-   	sprintf(buffer, "INSERT INTO trackdiabetes(meal, calories, carbs, sugars) VALUES('%s', %d, %d, %d)", meal, calint, carbint, sugint); 
-	printf("%s", buffer); 
 }; 
 
 // Deletes record from table ------------------------------------------------------------------
@@ -84,7 +56,7 @@ void delete_record(MYSQL* con) {
 	fgets(id, 5, stdin);		// To convert char to int
 	num = atoi(id); 
 
-	sprintf(buffer, "DELETE FROM trackdiabetes WHERE id=(%d)", num); 
+	sprintf(buffer, "DELETE FROM zzzzz WHERE id=(%d)", num); 
 	mysql_query(con, &buffer); 
 }; 
  
@@ -104,16 +76,15 @@ int main(int argc, char** argv) {
 			mysql_close(con);
 			exit(1);
 	}
-	mysql_query(con, "CREATE DATABASE newDB");		
 	
 	// Close prior to initializing a new connection with the newly created database
 	mysql_close(con);							 
 
 	con = mysql_init(NULL);
-	mysql_real_connect(con, "localhost", "user", "password", "newDB", 0, NULL, 0);			// connection containing new database. 
+	mysql_real_connect(con, "localhost", "user", "password", "newdb", 0, NULL, 0);			// connection containing new database. 
 
 	//Create Table------------------------------------------------------------------------------
-	mysql_query(con, "CREATE TABLE trackd(id INT PRIMARY KEY AUTO_INCREMENT, meal VARCHAR(255), calories INT, carbs INT, sugars INT)");
+	mysql_query(con, "CREATE TABLE zzzzz(id INT PRIMARY KEY AUTO_INCREMENT, VARCHAR(255), calories INT, carbs INT, sugars INT)");
 
 	// Instructions -----------------------------------------------------------------------------
 	printf("                                      << WELCOME TO DIABEATES ANALYZER >>\n\n");
@@ -122,7 +93,6 @@ int main(int argc, char** argv) {
 	printf("                                            2. Create meal entry \n");
 	printf("                                            3. Delete entry \n");
 	printf("                                            4. Exit program \n");
-	printf("                                            5. View all tables\n\n");
 
 	// Gather User Input -----------------------------------------------------------------------
 	char choice[10];
@@ -146,11 +116,6 @@ int main(int argc, char** argv) {
 				break;
 			case 4:
 				return 0;
-			case 5: 
-				retreive_tables(con);
-				break; 
-			case 6: 
-				create_table(con); 
 		}; 
 	}; 
 	mysql_close(con);
