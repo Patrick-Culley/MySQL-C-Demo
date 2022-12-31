@@ -4,7 +4,7 @@
 
 // Search by date -----------------------------------------------------------------------------
 void search_date(MYSQL* con) {
-	char buffer[255]; 
+	char buffer[100]; 
 	char user_entry[11]; 
 	MYSQL_RES* result; 
 	MYSQL_ROW row; 
@@ -19,7 +19,8 @@ void search_date(MYSQL* con) {
 	while ((row = mysql_fetch_row(result))) {
 		printf("ID: %s\nMEAL: %s  \nCALORIES: %s  \nCARBS: %s  \nSUGAR: %s\nDATE: %s\n\n",
 			row[0], row[1], row[2], row[3], row[4], row[5]);
-	}; 
+	};  
+	char newline = getchar();	// eliminate newline upon exit 
 	mysql_free_result(result);
 }; 
 
@@ -34,7 +35,6 @@ void retreive_rows(MYSQL* con) {
 		printf("ID: %s\nMEAL: %s  \nCALORIES: %s  \nCARBS: %s  \nSUGAR: %s\nDATE: %s\n\n", 
 			row[0], row[1], row[2], row[3], row[4], row[5]);
 	};
-	printf("\n"); 
 	mysql_free_result(res);						   // free prior to returing to main 
 };
 
@@ -132,12 +132,12 @@ int main(int argc, char** argv) {
 	printf("                                            5. Exit program \n");
 
 	// Gather User Input -----------------------------------------------------------------------
-	char choice[10];
+	char choice[3];
 	int num, ret;
 
 	while (1) {
 		printf("Enter number: ");
-		fgets(choice, 10, stdin);
+		fgets(choice, 3, stdin);
 		printf("\n");
 		num = atoi(choice);
 
